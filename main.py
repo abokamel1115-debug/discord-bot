@@ -1,6 +1,7 @@
 import discord
 import os
-from discord.ext import commands
+from discord.ext import commands, tasks
+import datetime
 
 TOKEN = os.environ.get("DISCORD_BOT_TOKEN")
 
@@ -12,17 +13,21 @@ bot = commands.Bot(command_prefix="!", intents=intents)
 
 @bot.event
 async def on_ready():
-    @tasks.loop(minutes=1)
-async def send_message():
-    now = datetime.datetime.now()
-
-    if now.hour == 21 and now.minute == 5:
-        channel = bot.get_channel(1342503298455961700)
-        if channel:
-            await channel.send(" بافلي فاكر نفسه بني ادم!")
     print(f"Logged in as {bot.user} (ID: {bot.user.id})")
     print("Bot is ready and online!")
     send_message.start()
+
+
+# 🔥 المهمة بتاعت الرسالة
+@tasks.loop(minutes=1)
+async def send_message():
+    now = datetime.datetime.now()
+
+    # ⏰ الساعة 9:20 بالليل
+    if now.hour == 21 and now.minute == 20:
+        channel = bot.get_channel(1342503298455961700)
+        if channel:
+            await channel.send("بافلي فاكر نفسه بني ادم 😂")
 
 
 @bot.command(name="hello")
@@ -74,6 +79,5 @@ async def on_command_error(ctx, error):
 
 if not TOKEN:
     print("ERROR: DISCORD_BOT_TOKEN environment variable is not set.")
-    print("Please add your bot token as a secret named DISCORD_BOT_TOKEN.")
 else:
     bot.run(TOKEN)

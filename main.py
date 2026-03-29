@@ -21,10 +21,10 @@ async def on_ready():
 # 🔥 المهمة بتاعت الرسالة
 @tasks.loop(minutes=1)
 async def send_message():
-    now = datetime.datetime.now()
+    now = datetime.datetime.utcnow() + datetime.timedelta(hours=2)
 
     # ⏰ الساعة 9:20 بالليل
-    if now.hour == 19 and now.minute == 56:
+    if now.hour == 22 and now.minute == 10:
         channel = bot.get_channel(1342503298455961700)
         if channel:
             await channel.send("بافلي فاكر نفسه بني ادم 😂")

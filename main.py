@@ -12,8 +12,17 @@ bot = commands.Bot(command_prefix="!", intents=intents)
 
 @bot.event
 async def on_ready():
+    @tasks.loop(minutes=1)
+async def send_message():
+    now = datetime.datetime.now()
+
+    if now.hour == 21 and now.minute == 5:
+        channel = bot.get_channel(1342503298455961700)
+        if channel:
+            await channel.send(" بافلي فاكر نفسه بني ادم!")
     print(f"Logged in as {bot.user} (ID: {bot.user.id})")
     print("Bot is ready and online!")
+    send_message.start()
 
 
 @bot.command(name="hello")

@@ -1,31 +1,21 @@
 const { getDB } = require('./index');
 
-// نظام XP
+// XP system
 async function handleXP(message) {
-    if (message.author.bot) return;
-
     const db = getDB();
     if (!db) return;
 
-    const users = db.collection("levels");
-
+    const users = db.collection("users");
     const userId = message.author.id;
-    const guildId = message.guild.id;
 
-    let user = await users.findOne({ userId, guildId });
+    let user = await users.findOne({ userId });
 
-    // لو المستخدم مش موجود
     if (!user) {
-        user = {
-            userId,
-            guildId,
-            xp: 0,
-            level: 1
-        };
+        user = { userId, xp: 0, level: 1 };
         await users.insertOne(user);
     }
 
-    // 🎯 كل رسالة = 3 XP
+    // 🔥 XP = 3
     user.xp += 3;
 
     const neededXP = user.level * 100;
@@ -38,8 +28,8 @@ async function handleXP(message) {
     }
 
     await users.updateOne(
-        { userId, guildId },
-        { $set: user }
+        { userId },
+        { $set: { xp: user.xp, level: user.level } }
     );
 }
 
@@ -48,12 +38,10 @@ async function getLevel(message) {
     const db = getDB();
     if (!db) return;
 
-    const users = db.collection("levels");
-
+    const users = db.collection("users");
     const userId = message.author.id;
-    const guildId = message.guild.id;
 
-    const user = await users.findOne({ userId, guildId });
+    const user = await users.findOne({ userId });
 
     if (!user) {
         return message.reply("😈 أنت لسه Level 0... ابدأ اكتب!");

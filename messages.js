@@ -3,7 +3,7 @@ function startMessages(client) {
 
     let lastSentMorning = null;
     let lastSentEvening = null;
-    let lastSentTest = null;
+    let lastSentDuaa = null;
 
     setInterval(() => {
         const now = new Date();
@@ -32,10 +32,10 @@ function startMessages(client) {
             lastSentEvening = today;
         }
 
-        // 🔥 Test الساعة 12:25
-        if (hours === 1 && minutes === 15 && lastSentTest !== today) {
-            channel.send("اللّهم إنّي أعوذ بكِ من العجز والكسل والجبن والهرم والبخلِ .. وأعوذ بك من عذاب القبر ومن فتنة المحيا والممات ");
-            lastSentTest = today;
+        // 🤲 الدعاء الساعة 1:20 مساءً
+        if (hours === 13 && minutes === 20 && lastSentDuaa !== today) {
+            channel.send("اللّهم إنّي أعوذ بك من العجز والكسل والجبن والهرم والبخل، وأعوذ بك من عذاب القبر ومن فتنة المحيا والممات 🤲");
+            lastSentDuaa = today;
         }
 
     }, 60000); // يفحص كل دقيقة

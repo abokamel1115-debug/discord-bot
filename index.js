@@ -1,5 +1,3 @@
-require('dotenv').config();
-
 const { Client, GatewayIntentBits } = require('discord.js');
 const { startMessages } = require('./messages');
 const { handleXP, getLevel } = require('./levels');
@@ -8,6 +6,7 @@ const express = require('express');
 const app = express();
 const PORT = process.env.PORT || 3000;
 
+// سيرفر بسيط علشان Railway يفضل شغال
 app.get('/', (req, res) => {
     res.send('Bot is alive 😈');
 });
@@ -16,6 +15,7 @@ app.listen(PORT, () => {
     console.log(`🌐 Server running on port ${PORT}`);
 });
 
+// إعداد البوت
 const client = new Client({
     intents: [
         GatewayIntentBits.Guilds,
@@ -24,14 +24,17 @@ const client = new Client({
     ]
 });
 
+// التوكن من Railway Variables
 const TOKEN = process.env.TOKEN;
 
+// لما البوت يشتغل
 client.once('ready', () => {
     console.log(`🔥 Logged in as ${client.user.tag}`);
 
     startMessages(client);
 });
 
+// استقبال الرسائل
 client.on('messageCreate', (message) => {
     if (message.author.bot) return;
 
@@ -46,4 +49,5 @@ client.on('messageCreate', (message) => {
     }
 });
 
+// تشغيل البوت
 client.login(TOKEN);

@@ -1,67 +1,66 @@
-const fs = require('fs');
-
-const DATA_FILE = 'levels.json';
-
-let users = {};
-
-// تحميل البيانات
-function loadData() {
-    if (!fs.existsSync(DATA_FILE)) {
-        fs.writeFileSync(DATA_FILE, "{}");
-    }
-
-    try {
-        const data = fs.readFileSync(DATA_FILE, 'utf8');
-        users = JSON.parse(data || '{}');
-    } catch (err) {
-        console.error("Load Error:", err.message);
-        users = {};
-    }
-}
-
-// حفظ البيانات
-function saveData() {
-    try {
-        fs.writeFileSync(DATA_FILE, JSON.stringify(users, null, 2));
-    } catch (err) {
-        console.error("Save Error:", err.message);
-    }
-}
-
-loadData();
+const { getDB } = require('./index');
 
 // نظام XP
-function handleXP(message) {
+async function handleXP(message) {
+    if (message.author.bot) return;
+
+    const db = getDB();
+    if (!db) return;
+
+    const users = db.collection("levels");
+
     const userId = message.author.id;
+    const guildId = message.guild.id;
 
-    if (!users[userId]) {
-        users[userId] = { xp: 0, level: 1 };
+    let user = await users.findOne({ userId, guildId });
+
+    // لو المستخدم مش موجود
+    if (!user) {
+        user = {
+            userId,
+            guildId,
+            xp: 0,
+            level: 1
+        };
+        await users.insertOne(user);
     }
 
-    users[userId].xp += 2;
+    // 🎯 كل رسالة = 3 XP
+    user.xp += 3;
 
-    const neededXP = users[userId].level * 100;
+    const neededXP = user.level * 100;
 
-    if (users[userId].xp >= neededXP) {
-        users[userId].level++;
-        users[userId].xp = 0;
+    if (user.xp >= neededXP) {
+        user.level++;
+        user.xp = 0;
 
-        message.channel.send(`🔥 ${message.author} وصل Level ${users[userId].level} 😈`);
+        message.channel.send(`🔥 ${message.author} وصل Level ${user.level} 😈`);
     }
 
-    saveData();
+    await users.updateOne(
+        { userId, guildId },
+        { $set: user }
+    );
 }
 
 // عرض المستوى
-function getLevel(message) {
-    const userId = message.author.id;
+async function getLevel(message) {
+    const db = getDB();
+    if (!db) return;
 
-    if (!users[userId]) {
+    const users = db.collection("levels");
+
+    const userId = message.author.id;
+    const guildId = message.guild.id;
+
+    const user = await users.findOne({ userId, guildId });
+
+    if (!user) {
         return message.reply("😈 أنت لسه Level 0... ابدأ اكتب!");
     }
 
     message.reply(
-        `🔥 Level: ${users[userId].level}\n💀 XP: ${users[userId].xp}`
+        `🔥 Level: ${user.level}\n💀 XP: ${user.xp}`
     );
 }
 

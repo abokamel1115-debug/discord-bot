@@ -24,10 +24,10 @@ async def send_message():
     now = datetime.datetime.utcnow() + datetime.timedelta(hours=2)
 
     # ⏰ الساعة 9:20 بالليل
-    if nowif now.hour == 3 and 5 <= now.minute <= 6::
-        channel = bot.get_channel(1342503298455961700)
+    if nowif now.hour == 3 and 9 <= now.minute <= 10::
+        channel = bot.get_channel(1341786874016170074)
         if channel:
-            await channel.send("بافلي فاكر نفسه بني ادم 😂")
+            await channel.send("Hey!")
 
 
 @bot.command(name="hello")

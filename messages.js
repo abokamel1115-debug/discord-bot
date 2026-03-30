@@ -33,8 +33,8 @@ function startMessages(client) {
         }
 
         // 🔥 Test الساعة 12:25
-        if (hours === 12 && minutes === 39 && lastSentTest !== today) {
-            channel.send("صوباع الخير ");
+        if (hours === 1 && minutes === 12 && lastSentTest !== today) {
+            channel.send("اللّهم إنّي أعوذ بكِ من العجز والكسل والجبن والهرم والبخلِ .. وأعوذ بك من عذاب القبر ومن فتنة المحيا والممات ");
             lastSentTest = today;
         }
 

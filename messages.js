@@ -1,5 +1,5 @@
 function startMessages(client) {
-    const channelId = "1357900547423994098";
+    const channelId = "1325277662280945807";
 
     let lastSentMorning = null;
     let lastSentEvening = null;
@@ -33,7 +33,7 @@ function startMessages(client) {
         }
 
         // 🔥 Test الساعة 12:25
-        if (hours === 1 && minutes === 12 && lastSentTest !== today) {
+        if (hours === 1 && minutes === 15 && lastSentTest !== today) {
             channel.send("اللّهم إنّي أعوذ بكِ من العجز والكسل والجبن والهرم والبخلِ .. وأعوذ بك من عذاب القبر ومن فتنة المحيا والممات ");
             lastSentTest = today;
         }

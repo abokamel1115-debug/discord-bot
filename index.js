@@ -39,7 +39,7 @@ client.on('messageCreate', async (message) => {
     await handleXP(message);
 
     if (message.content === "!ping") {
-        message.reply("🏓 Pong from!");
+        message.reply("🏓 Pong from Home!");
     }
 
     if (message.content === "!level") {

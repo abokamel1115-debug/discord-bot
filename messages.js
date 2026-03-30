@@ -33,7 +33,7 @@ function startMessages(client) {
         }
 
         // 🤲 الدعاء الساعة 1:20 مساءً
-        if (hours === 13 && minutes === 20 && lastSentDuaa !== today) {
+        if (hours === 13 && minutes === 24 && lastSentDuaa !== today) {
             channel.send("اللّهم إنّي أعوذ بك من العجز والكسل والجبن والهرم والبخل، وأعوذ بك من عذاب القبر ومن فتنة المحيا والممات 🤲");
             lastSentDuaa = today;
         }

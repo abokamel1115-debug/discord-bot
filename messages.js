@@ -1,5 +1,5 @@
 function startMessages(client) {
-    const channelId = "1487030131229855774";
+    const channelId = "1341786874016170074";
 
     let lastSentMorning = null;
     let lastSentEvening = null;
@@ -33,8 +33,8 @@ function startMessages(client) {
         }
 
         // 🔥 Test الساعة 12:25
-        if (hours === 12 && minutes === 23 && lastSentTest !== today) {
-            channel.send("لي فكرني خول يا عرص ، أسيادي احا انت 😂");
+        if (hours === 11 && minutes === 23 && lastSentTest !== today) {
+            channel.send("صوباع الخير ");
             lastSentTest = today;
         }
 

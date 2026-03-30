@@ -1,5 +1,5 @@
 function startMessages(client) {
-    const channelId = "1341786874016170074";
+    const channelId = "1357900547423994098";
 
     let lastSentMorning = null;
     let lastSentEvening = null;

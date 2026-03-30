@@ -1,7 +1,8 @@
+require('dotenv').config();
+
 const { Client, GatewayIntentBits } = require('discord.js');
 const { startMessages } = require('./messages');
 const { handleXP, getLevel } = require('./levels');
-const { startTikTok } = require('./tiktok');
 const express = require('express');
 
 const app = express();
@@ -25,11 +26,10 @@ const client = new Client({
 
 const TOKEN = process.env.TOKEN;
 
-client.once('clientReady', () => {
+client.once('ready', () => {
     console.log(`🔥 Logged in as ${client.user.tag}`);
 
     startMessages(client);
-    startTikTok(client);
 });
 
 client.on('messageCreate', (message) => {

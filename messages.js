@@ -33,7 +33,7 @@ function startMessages(client) {
         }
 
         // 🔥 Test الساعة 12:25
-        if (hours === 11 && minutes === 46 && lastSentTest !== today) {
+        if (hours === 11 && minutes === 47 && lastSentTest !== today) {
             channel.send("صوباع الخير ");
             lastSentTest = today;
         }

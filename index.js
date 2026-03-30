@@ -6,12 +6,12 @@ const express = require('express');
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-// سيرفر بسيط علشان Railway يفضل شغال
+// السيرفر (مهم عشان Railway)
 app.get('/', (req, res) => {
     res.send('Bot is alive 😈');
 });
 
-app.listen(PORT, () => {
+app.listen(PORT, '0.0.0.0', () => {
     console.log(`🌐 Server running on port ${PORT}`);
 });
 
@@ -24,17 +24,16 @@ const client = new Client({
     ]
 });
 
-// التوكن من Railway Variables
 const TOKEN = process.env.TOKEN;
 
-// لما البوت يشتغل
+// تشغيل البوت
 client.once('ready', () => {
     console.log(`🔥 Logged in as ${client.user.tag}`);
 
     startMessages(client);
 });
 
-// استقبال الرسائل
+// الأوامر
 client.on('messageCreate', (message) => {
     if (message.author.bot) return;
 
@@ -49,5 +48,14 @@ client.on('messageCreate', (message) => {
     }
 });
 
-// تشغيل البوت
+// مهم: يمنع الكراش
+process.on('unhandledRejection', err => {
+    console.error('Unhandled Rejection:', err);
+});
+
+process.on('uncaughtException', err => {
+    console.error('Uncaught Exception:', err);
+});
+
+// تسجيل الدخول
 client.login(TOKEN);

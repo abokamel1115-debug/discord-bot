@@ -1,6 +1,5 @@
-const { getDB } = require('./index');
+const { getDB } = require('./database'); // 👈 بدل index
 
-// XP system
 async function handleXP(message) {
     const db = getDB();
     if (!db) return;
@@ -15,7 +14,6 @@ async function handleXP(message) {
         await users.insertOne(user);
     }
 
-    // 🔥 XP = 3
     user.xp += 3;
 
     const neededXP = user.level * 100;
@@ -33,7 +31,6 @@ async function handleXP(message) {
     );
 }
 
-// عرض المستوى
 async function getLevel(message) {
     const db = getDB();
     if (!db) return;

@@ -8,7 +8,7 @@ const app = express();
 const PORT = process.env.PORT || 3000;
 
 app.get('/', (req, res) => {
-    res.send('Bot is alive 😈');
+    res.send('Bot is');
 });
 
 app.listen(PORT, '0.0.0.0', () => {
@@ -39,7 +39,7 @@ client.on('messageCreate', async (message) => {
     await handleXP(message);
 
     if (message.content === "!ping") {
-        message.reply("🏓 Pong from hell!");
+        message.reply("🏓 Pong from!");
     }
 
     if (message.content === "!level") {

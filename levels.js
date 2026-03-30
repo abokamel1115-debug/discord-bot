@@ -38,7 +38,7 @@ function handleXP(message) {
         users[userId] = { xp: 0, level: 1 };
     }
 
-    users[userId].xp += 10;
+    users[userId].xp += 2;
 
     const neededXP = users[userId].level * 100;
 

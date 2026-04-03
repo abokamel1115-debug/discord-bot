@@ -1,4 +1,4 @@
-require("dotenv").config(); // 👈 مهم
+require("dotenv").config();
 
 const { Client, GatewayIntentBits } = require('discord.js');
 const { startMessages } = require('./messages');
@@ -18,7 +18,7 @@ app.listen(PORT, '0.0.0.0', () => {
     console.log(`🌐 Server running on port ${PORT}`);
 });
 
-// 🔥 الاتصال بقاعدة البيانات
+// 🔥 DB
 connectDB();
 
 const client = new Client({
@@ -51,7 +51,7 @@ client.on('messageCreate', async (message) => {
         return await getLevel(message);
     }
 
-    // 🤖 AI COMMAND
+    // 🤖 AI
     if (message.content.startsWith("/ai ")) {
         const prompt = message.content.slice(4).trim();
 
@@ -65,23 +65,19 @@ client.on('messageCreate', async (message) => {
             const API_KEY = process.env.GEMINI_API_KEY;
 
             if (!API_KEY) {
-                return message.reply("❌ مفيش API KEY متحط في .env");
+                return message.reply("❌ مفيش API KEY في .env");
             }
 
-            // 🧪 اختبار API
+            // 🧪 اختبار
             const testRes = await fetch(
-                `https://generativelanguage.googleapis.com/v1/models/gemini-1.5-flash:generateContent?key=${API_KEY}`,
+                `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${API_KEY}`,
                 {
                     method: "POST",
                     headers: {
                         "Content-Type": "application/json",
                     },
                     body: JSON.stringify({
-                        contents: [
-                            {
-                                parts: [{ text: "test" }],
-                            },
-                        ],
+                        contents: [{ parts: [{ text: "test" }] }],
                     }),
                 }
             );
@@ -100,18 +96,14 @@ client.on('messageCreate', async (message) => {
 
             // ✅ الطلب الحقيقي
             const res = await fetch(
-                `https://generativelanguage.googleapis.com/v1/models/gemini-1.5-flash:generateContent?key=${API_KEY}`,
+                `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${API_KEY}`,
                 {
                     method: "POST",
                     headers: {
                         "Content-Type": "application/json",
                     },
                     body: JSON.stringify({
-                        contents: [
-                            {
-                                parts: [{ text: prompt }],
-                            },
-                        ],
+                        contents: [{ parts: [{ text: prompt }] }],
                     }),
                 }
             );

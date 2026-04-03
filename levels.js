@@ -1,10 +1,10 @@
-const { getDB } = require('./database'); // 👈 بدل index
+const connectDB = require('./database');
 
+// 🔥 XP
 async function handleXP(message) {
-    const db = getDB();
-    if (!db) return;
+    const db = await connectDB();
+    const users = db.collection("levels");
 
-    const users = db.collection("users");
     const userId = message.author.id;
 
     let user = await users.findOne({ userId });
@@ -31,22 +31,18 @@ async function handleXP(message) {
     );
 }
 
+// 📊 عرض
 async function getLevel(message) {
-    const db = getDB();
-    if (!db) return;
+    const db = await connectDB();
+    const users = db.collection("levels");
 
-    const users = db.collection("users");
-    const userId = message.author.id;
-
-    const user = await users.findOne({ userId });
+    const user = await users.findOne({ userId: message.author.id });
 
     if (!user) {
         return message.reply("😈 أنت لسه Level 0... ابدأ اكتب!");
     }
 
-    message.reply(
-        `🔥 Level: ${user.level}\n💀 XP: ${user.xp}`
-    );
+    message.reply(`🔥 Level: ${user.level}\n💀 XP: ${user.xp}`);
 }
 
 module.exports = { handleXP, getLevel };

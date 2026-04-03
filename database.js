@@ -1,22 +1,18 @@
 const { MongoClient } = require('mongodb');
 
-const uri = process.env.MONGO_URI;
+const uri = "mongodb+srv://botuser:Bot123456@cluster0.xm1xwpx.mongodb.net/?retryWrites=true&w=majority";
+
+const client = new MongoClient(uri);
 
 let db;
 
 async function connectDB() {
-    try {
-        const client = new MongoClient(uri);
+    if (!db) {
         await client.connect();
-        db = client.db("discordBot");
+        db = client.db("discord");
         console.log("✅ MongoDB Connected");
-    } catch (err) {
-        console.error("❌ MongoDB Error:", err.message);
     }
-}
-
-function getDB() {
     return db;
 }
 
-module.exports = { connectDB, getDB };
+module.exports = connectDB;

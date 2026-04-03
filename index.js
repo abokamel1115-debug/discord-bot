@@ -43,7 +43,7 @@ client.on('messageCreate', async (message) => {
 
     // 🟢 ping
     if (message.content === "!ping") {
-        return message.reply("🏓 Pong from Home!");
+        return message.reply("🏓 Pong!");
     }
 
     // 🟢 level
@@ -65,57 +65,44 @@ client.on('messageCreate', async (message) => {
             const API_KEY = process.env.GEMINI_API_KEY;
 
             if (!API_KEY) {
-                return message.reply("❌ مفيش API KEY في .env");
+                return message.reply("❌ حط GEMINI_API_KEY في .env");
             }
 
-            // 🧪 اختبار
-            const testRes = await fetch(
-                `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${API_KEY}`,
-                {
-                    method: "POST",
-                    headers: {
-                        "Content-Type": "application/json",
-                    },
-                    body: JSON.stringify({
-                        contents: [{ parts: [{ text: "test" }] }],
-                    }),
-                }
-            );
+            // 🔥 اللينك الصح 100%
+            const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${API_KEY}`;
 
-            const testData = await testRes.json();
+            console.log("USING URL:", url); // للتأكد
 
-            if (!testData.candidates) {
-                console.log("❌ API ERROR:", testData);
-
-                return message.reply(
-                    "❌ الـ AI مش شغال:\n```json\n" +
-                    JSON.stringify(testData, null, 2) +
-                    "\n```"
-                );
-            }
-
-            // ✅ الطلب الحقيقي
-            const res = await fetch(
-                `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${API_KEY}`,
-                {
-                    method: "POST",
-                    headers: {
-                        "Content-Type": "application/json",
-                    },
-                    body: JSON.stringify({
-                        contents: [{ parts: [{ text: prompt }] }],
-                    }),
-                }
-            );
+            const res = await fetch(url, {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify({
+                    contents: [
+                        {
+                            parts: [{ text: prompt }],
+                        },
+                    ],
+                }),
+            });
 
             const data = await res.json();
 
             console.log("AI RESPONSE:", JSON.stringify(data, null, 2));
 
-            const reply =
-                data?.candidates?.[0]?.content?.parts?.[0]?.text ||
-                "❌ حصل خطأ في الرد";
+            if (!data.candidates) {
+                return message.reply(
+                    "❌ Error:\n```json\n" +
+                    JSON.stringify(data, null, 2) +
+                    "\n```"
+                );
+            }
 
+            const reply =
+                data.candidates[0].content.parts[0].text;
+
+            // limit
             if (reply.length > 2000) {
                 return message.reply(reply.slice(0, 2000));
             }
@@ -123,8 +110,8 @@ client.on('messageCreate', async (message) => {
             message.reply(reply);
 
         } catch (err) {
-            console.error("❌ ERROR:", err);
-            message.reply("❌ في مشكلة حصلت أثناء الاتصال بالـ AI");
+            console.error(err);
+            message.reply("❌ حصل error كبير");
         }
     }
 });

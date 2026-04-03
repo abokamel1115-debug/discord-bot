@@ -1,9 +1,11 @@
+require("dotenv").config(); // 👈 مهم
+
 const { Client, GatewayIntentBits } = require('discord.js');
 const { startMessages } = require('./messages');
 const { handleXP, getLevel } = require('./levels');
 const express = require('express');
 const { connectDB } = require('./database');
-const fetch = require("node-fetch"); // 👈 جديد
+const fetch = require("node-fetch");
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -39,17 +41,17 @@ client.on('messageCreate', async (message) => {
 
     await handleXP(message);
 
-    // 🟢 أمر ping
+    // 🟢 ping
     if (message.content === "!ping") {
         return message.reply("🏓 Pong from Home!");
     }
 
-    // 🟢 أمر level
+    // 🟢 level
     if (message.content === "!level") {
         return await getLevel(message);
     }
 
-    // 🤖 أمر AI
+    // 🤖 AI COMMAND
     if (message.content.startsWith("/ai ")) {
         const prompt = message.content.slice(4).trim();
 
@@ -58,10 +60,47 @@ client.on('messageCreate', async (message) => {
         }
 
         try {
-            await message.channel.sendTyping(); // 👈 تحسين
+            await message.channel.sendTyping();
 
+            const API_KEY = process.env.GEMINI_API_KEY;
+
+            if (!API_KEY) {
+                return message.reply("❌ مفيش API KEY متحط في .env");
+            }
+
+            // 🧪 اختبار API
+            const testRes = await fetch(
+                `https://generativelanguage.googleapis.com/v1/models/gemini-1.5-flash:generateContent?key=${API_KEY}`,
+                {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                    },
+                    body: JSON.stringify({
+                        contents: [
+                            {
+                                parts: [{ text: "test" }],
+                            },
+                        ],
+                    }),
+                }
+            );
+
+            const testData = await testRes.json();
+
+            if (!testData.candidates) {
+                console.log("❌ API ERROR:", testData);
+
+                return message.reply(
+                    "❌ الـ AI مش شغال:\n```json\n" +
+                    JSON.stringify(testData, null, 2) +
+                    "\n```"
+                );
+            }
+
+            // ✅ الطلب الحقيقي
             const res = await fetch(
-                `https://generativelanguage.googleapis.com/v1/models/gemini-pro:generateContent?key=${process.env.GEMINI_API_KEY}`,
+                `https://generativelanguage.googleapis.com/v1/models/gemini-1.5-flash:generateContent?key=${API_KEY}`,
                 {
                     method: "POST",
                     headers: {
@@ -79,11 +118,12 @@ client.on('messageCreate', async (message) => {
 
             const data = await res.json();
 
+            console.log("AI RESPONSE:", JSON.stringify(data, null, 2));
+
             const reply =
                 data?.candidates?.[0]?.content?.parts?.[0]?.text ||
                 "❌ حصل خطأ في الرد";
 
-            // ⚠️ Discord limit 2000 حرف
             if (reply.length > 2000) {
                 return message.reply(reply.slice(0, 2000));
             }
@@ -91,8 +131,8 @@ client.on('messageCreate', async (message) => {
             message.reply(reply);
 
         } catch (err) {
-            console.error(err);
-            message.reply("❌ في مشكلة حصلت أثناء الاتصال بالذكاء الاصطناعي");
+            console.error("❌ ERROR:", err);
+            message.reply("❌ في مشكلة حصلت أثناء الاتصال بالـ AI");
         }
     }
 });

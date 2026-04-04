@@ -68,10 +68,8 @@ client.on('messageCreate', async (message) => {
                 return message.reply("❌ حط GEMINI_API_KEY في .env");
             }
 
-            // 🔥 اللينك الصح 100%
-            const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${API_KEY}`;
-
-            console.log("USING URL:", url); // للتأكد
+            // ✅ اللينك الجديد الصح 100%
+            const url = `https://generativeai.googleapis.com/v1/models/gemini-1.5-flash:generateContent?key=${API_KEY}`;
 
             const res = await fetch(url, {
                 method: "POST",
@@ -81,9 +79,10 @@ client.on('messageCreate', async (message) => {
                 body: JSON.stringify({
                     contents: [
                         {
-                            parts: [{ text: prompt }],
-                        },
-                    ],
+                            role: "user",
+                            parts: [{ text: prompt }]
+                        }
+                    ]
                 }),
             });
 
@@ -99,12 +98,11 @@ client.on('messageCreate', async (message) => {
                 );
             }
 
-            const reply =
-                data.candidates[0].content.parts[0].text;
+            let reply = data.candidates[0].content.parts[0].text;
 
-            // limit
+            // limit 2000
             if (reply.length > 2000) {
-                return message.reply(reply.slice(0, 2000));
+                reply = reply.slice(0, 2000);
             }
 
             message.reply(reply);

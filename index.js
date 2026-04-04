@@ -52,7 +52,7 @@ client.on('messageCreate', async (message) => {
         return await getLevel(message);
     }
 
-    // 🏆 Best 5 Players (Embed + صورة Top 1)
+    // 🏆 Best 5 Players (🔥 نسخة مطورة)
     if (message.content === "!best") {
         const db = getDB();
         if (!db) return;
@@ -82,7 +82,7 @@ client.on('messageCreate', async (message) => {
             description += `${medal} **#${i + 1}** - <@${u.userId}> (Level ${u.level})\n`;
         }
 
-        // 👑 نجيب Top 1
+        // 👑 Top 1
         let topUser = null;
         try {
             topUser = await client.users.fetch(topUsers[0].userId);
@@ -91,16 +91,20 @@ client.on('messageCreate', async (message) => {
         }
 
         const embed = new EmbedBuilder()
-            .setColor("#2b2d31")
+            .setColor("#FFD700") // 👑 ذهبي
             .setTitle("🏆 Best 5 Players")
             .setDescription(description)
             .setFooter({ text: "Devil Bot 😈" });
 
-        // 🖼️ صورة Top 1
         if (topUser) {
-            embed.setThumbnail(
-                topUser.displayAvatarURL({ dynamic: true, size: 1024 })
-            );
+            const avatar = topUser.displayAvatarURL({ dynamic: true, size: 1024 });
+
+            embed.setAuthor({
+                name: `👑 Top Player: ${topUser.username}`,
+                iconURL: avatar
+            });
+
+            embed.setImage(avatar); // 🖼️ صورة كبيرة
         }
 
         message.reply({ embeds: [embed] });

@@ -18,7 +18,6 @@ app.listen(PORT, '0.0.0.0', () => {
     console.log(`🌐 Server running on port ${PORT}`);
 });
 
-// 🔥 DB
 connectDB();
 
 const client = new Client({
@@ -41,12 +40,10 @@ client.on('messageCreate', async (message) => {
 
     await handleXP(message);
 
-    // 🟢 ping
     if (message.content === "!ping") {
         return message.reply("🏓 Pong!");
     }
 
-    // 🟢 level
     if (message.content === "!level") {
         return await getLevel(message);
     }
@@ -68,8 +65,8 @@ client.on('messageCreate', async (message) => {
                 return message.reply("❌ حط GEMINI_API_KEY في .env");
             }
 
-            // ✅ Gemini Pro (الموديل الشغال)
-            const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent?key=${API_KEY}`;
+            // ✅ الموديل الصح 100%
+            const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash-latest:generateContent?key=${API_KEY}`;
 
             const res = await fetch(url, {
                 method: "POST",
@@ -87,9 +84,8 @@ client.on('messageCreate', async (message) => {
 
             const data = await res.json();
 
-            console.log("AI RESPONSE:", JSON.stringify(data, null, 2));
+            console.log("AI RESPONSE:", data);
 
-            // ❌ لو في Error
             if (!data.candidates) {
                 return message.reply(
                     "❌ Error:\n```json\n" +
@@ -101,7 +97,7 @@ client.on('messageCreate', async (message) => {
             let reply = data.candidates[0].content.parts[0].text;
 
             if (!reply) {
-                return message.reply("❌ مفيش رد من AI");
+                return message.reply("❌ مفيش رد");
             }
 
             if (reply.length > 2000) {
@@ -111,11 +107,8 @@ client.on('messageCreate', async (message) => {
             message.reply(reply);
 
         } catch (err) {
-            console.error("❌ ERROR:", err);
-
-            message.reply(
-                "❌ Error:\n```" + err.message + "```"
-            );
+            console.error(err);
+            message.reply("❌ حصل error: " + err.message);
         }
     }
 });

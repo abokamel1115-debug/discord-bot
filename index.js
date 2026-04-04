@@ -18,6 +18,7 @@ app.listen(PORT, '0.0.0.0', () => {
     console.log(`🌐 Server running on port ${PORT}`);
 });
 
+// 🔥 DB
 connectDB();
 
 const client = new Client({
@@ -40,10 +41,12 @@ client.on('messageCreate', async (message) => {
 
     await handleXP(message);
 
+    // 🟢 ping
     if (message.content === "!ping") {
         return message.reply("🏓 Pong!");
     }
 
+    // 🟢 level
     if (message.content === "!level") {
         return await getLevel(message);
     }
@@ -65,8 +68,8 @@ client.on('messageCreate', async (message) => {
                 return message.reply("❌ حط GEMINI_API_KEY في .env");
             }
 
-            // ✅ الموديل الصح 100%
-            const url = `https://generativelanguage.googleapis.com/v1beta/models/models/gemini-1.0-pro:generateContent?key=${API_KEY}`;
+            // ✅ الموديل النهائي
+            const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.0-pro:generateContent?key=${API_KEY}`;
 
             const res = await fetch(url, {
                 method: "POST",
@@ -84,8 +87,9 @@ client.on('messageCreate', async (message) => {
 
             const data = await res.json();
 
-            console.log("AI RESPONSE:", data);
+            console.log("AI RESPONSE:", JSON.stringify(data, null, 2));
 
+            // ❌ لو في error
             if (!data.candidates) {
                 return message.reply(
                     "❌ Error:\n```json\n" +
@@ -97,7 +101,7 @@ client.on('messageCreate', async (message) => {
             let reply = data.candidates[0].content.parts[0].text;
 
             if (!reply) {
-                return message.reply("❌ مفيش رد");
+                return message.reply("❌ مفيش رد من AI");
             }
 
             if (reply.length > 2000) {

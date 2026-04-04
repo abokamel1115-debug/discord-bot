@@ -1,6 +1,6 @@
 require("dotenv").config();
 
-const { Client, GatewayIntentBits } = require('discord.js');
+const { Client, GatewayIntentBits, EmbedBuilder } = require('discord.js');
 const { startMessages } = require('./messages');
 const { handleXP, getLevel } = require('./levels');
 const { getDB, connectDB } = require('./database');
@@ -52,7 +52,7 @@ client.on('messageCreate', async (message) => {
         return await getLevel(message);
     }
 
-    // 🏆 Best 5 Players
+    // 🏆 Best 5 (Embed)
     if (message.content === "!best") {
         const db = getDB();
         if (!db) return;
@@ -69,7 +69,7 @@ client.on('messageCreate', async (message) => {
             return message.reply("❌ مفيش بيانات لسه");
         }
 
-        let text = "🏆 **Best 5 Players**\n\n";
+        let description = "";
 
         for (let i = 0; i < topUsers.length; i++) {
             const u = topUsers[i];
@@ -79,10 +79,16 @@ client.on('messageCreate', async (message) => {
             else if (i === 1) medal = "🥈";
             else if (i === 2) medal = "🥉";
 
-            text += `${medal} #${i + 1} - <@${u.userId}> (Level ${u.level})\n`;
+            description += `${medal} **#${i + 1}** - <@${u.userId}> (Level ${u.level})\n`;
         }
 
-        message.reply(text);
+        const embed = new EmbedBuilder()
+            .setColor("#2b2d31")
+            .setTitle("🏆 Best 5 Players")
+            .setDescription(description)
+            .setFooter({ text: "Devil Bot 😈" });
+
+        message.reply({ embeds: [embed] });
     }
 });
 

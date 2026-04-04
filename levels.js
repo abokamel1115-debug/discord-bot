@@ -34,7 +34,7 @@ async function handleXP(message) {
     );
 }
 
-// 📊 عرض الليفل (Embed)
+// 📊 عرض الليفل (Embed احترافي)
 async function getLevel(message) {
     const db = getDB();
     if (!db) return;
@@ -52,10 +52,13 @@ async function getLevel(message) {
     const xp = user.xp;
     const neededXP = level * 100;
 
+    // 🔥 الاسم الصح (Nickname أو Username)
+    const name = message.member?.displayName || message.author.username;
+
     const embed = new EmbedBuilder()
         .setColor("#2b2d31")
         .setAuthor({
-            name: `📊 إحصائيات ${message.author.username}`,
+            name: `📊 إحصائيات ${name}`,
             iconURL: message.author.displayAvatarURL()
         })
         .setThumbnail(message.author.displayAvatarURL({ dynamic: true }))

@@ -16,7 +16,6 @@ async function handleXP(message) {
         await users.insertOne(user);
     }
 
-    // ➕ 3 XP لكل رسالة
     user.xp += 3;
 
     const neededXP = user.level * 100;
@@ -34,7 +33,20 @@ async function handleXP(message) {
     );
 }
 
-// 📊 عرض الليفل (Embed احترافي)
+// 🧠 دالة تعمل XP Bar
+function createXPBar(xp, neededXP) {
+    const percentage = xp / neededXP;
+    const totalBars = 10;
+    const filledBars = Math.round(percentage * totalBars);
+    const emptyBars = totalBars - filledBars;
+
+    const bar = "█".repeat(filledBars) + "░".repeat(emptyBars);
+    const percentText = Math.round(percentage * 100);
+
+    return `${bar} ${percentText}%`;
+}
+
+// 📊 عرض الليفل (Embed)
 async function getLevel(message) {
     const db = getDB();
     if (!db) return;
@@ -52,8 +64,10 @@ async function getLevel(message) {
     const xp = user.xp;
     const neededXP = level * 100;
 
-    // 🔥 الاسم الصح (Nickname أو Username)
     const name = message.member?.displayName || message.author.username;
+
+    // 🔥 XP Bar
+    const xpBar = createXPBar(xp, neededXP);
 
     const embed = new EmbedBuilder()
         .setColor("#2b2d31")
@@ -70,8 +84,8 @@ async function getLevel(message) {
             },
             {
                 name: "✨ النقاط",
-                value: `\`${xp} / ${neededXP}\``,
-                inline: true
+                value: `\`${xp} / ${neededXP}\`\n${xpBar}`,
+                inline: false
             }
         )
         .setFooter({ text: "Devil Bot 😈" });

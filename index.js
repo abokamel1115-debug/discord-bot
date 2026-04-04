@@ -3,9 +3,9 @@ require("dotenv").config();
 const { Client, GatewayIntentBits } = require('discord.js');
 const { startMessages } = require('./messages');
 const { handleXP, getLevel } = require('./levels');
+const { getDB, connectDB } = require('./database');
+
 const express = require('express');
-const { connectDB } = require('./database');
-const fetch = require("node-fetch");
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -39,6 +39,7 @@ client.once('ready', () => {
 client.on('messageCreate', async (message) => {
     if (message.author.bot) return;
 
+    // 🔥 XP
     await handleXP(message);
 
     // 🟢 ping
@@ -51,69 +52,37 @@ client.on('messageCreate', async (message) => {
         return await getLevel(message);
     }
 
-    // 🤖 AI
-    if (message.content.startsWith("/ai ")) {
-        const prompt = message.content.slice(4).trim();
+    // 🏆 Best 5 Players
+    if (message.content === "!best") {
+        const db = getDB();
+        if (!db) return;
 
-        if (!prompt) {
-            return message.reply("❌ اكتب سؤال بعد /ai");
+        const users = db.collection("users");
+
+        const topUsers = await users
+            .find()
+            .sort({ level: -1, xp: -1 })
+            .limit(5)
+            .toArray();
+
+        if (!topUsers.length) {
+            return message.reply("❌ مفيش بيانات لسه");
         }
 
-        try {
-            await message.channel.sendTyping();
+        let text = "🏆 **Best 5 Players**\n\n";
 
-            const API_KEY = process.env.GEMINI_API_KEY;
+        for (let i = 0; i < topUsers.length; i++) {
+            const u = topUsers[i];
 
-            if (!API_KEY) {
-                return message.reply("❌ حط GEMINI_API_KEY في .env");
-            }
+            let medal = "🔹";
+            if (i === 0) medal = "🥇";
+            else if (i === 1) medal = "🥈";
+            else if (i === 2) medal = "🥉";
 
-            // ✅ الموديل النهائي
-            const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.0-pro:generateContent?key=${API_KEY}`;
-
-            const res = await fetch(url, {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json",
-                },
-                body: JSON.stringify({
-                    contents: [
-                        {
-                            parts: [{ text: prompt }]
-                        }
-                    ]
-                }),
-            });
-
-            const data = await res.json();
-
-            console.log("AI RESPONSE:", JSON.stringify(data, null, 2));
-
-            // ❌ لو في error
-            if (!data.candidates) {
-                return message.reply(
-                    "❌ Error:\n```json\n" +
-                    JSON.stringify(data, null, 2) +
-                    "\n```"
-                );
-            }
-
-            let reply = data.candidates[0].content.parts[0].text;
-
-            if (!reply) {
-                return message.reply("❌ مفيش رد من AI");
-            }
-
-            if (reply.length > 2000) {
-                reply = reply.slice(0, 2000);
-            }
-
-            message.reply(reply);
-
-        } catch (err) {
-            console.error(err);
-            message.reply("❌ حصل error: " + err.message);
+            text += `${medal} #${i + 1} - <@${u.userId}> (Level ${u.level})\n`;
         }
+
+        message.reply(text);
     }
 });
 

@@ -33,7 +33,7 @@ async function handleXP(message) {
     );
 }
 
-// 🧠 دالة تعمل XP Bar
+// 🔥 XP Bar
 function createXPBar(xp, neededXP) {
     const percentage = xp / neededXP;
     const totalBars = 10;
@@ -46,7 +46,16 @@ function createXPBar(xp, neededXP) {
     return `${bar} ${percentText}%`;
 }
 
-// 📊 عرض الليفل (Embed)
+// 👑 حساب الرانك
+async function getRank(users, userId) {
+    const allUsers = await users.find().sort({ level: -1, xp: -1 }).toArray();
+
+    const index = allUsers.findIndex(u => u.userId === userId);
+
+    return index === -1 ? "?" : index + 1;
+}
+
+// 📊 عرض الليفل
 async function getLevel(message) {
     const db = getDB();
     if (!db) return;
@@ -66,8 +75,10 @@ async function getLevel(message) {
 
     const name = message.member?.displayName || message.author.username;
 
-    // 🔥 XP Bar
     const xpBar = createXPBar(xp, neededXP);
+
+    // 👑 الرانك
+    const rank = await getRank(users, userId);
 
     const embed = new EmbedBuilder()
         .setColor("#2b2d31")
@@ -80,6 +91,11 @@ async function getLevel(message) {
             {
                 name: "⭐ المستوى",
                 value: `\`${level}\``,
+                inline: true
+            },
+            {
+                name: "👑 الرتبة",
+                value: `\`#${rank}\``,
                 inline: true
             },
             {

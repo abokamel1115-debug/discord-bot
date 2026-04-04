@@ -64,11 +64,12 @@ client.on('messageCreate', async (message) => {
 
             const API_KEY = process.env.GEMINI_API_KEY;
 
+            console.log("API KEY:", API_KEY); // 🔥 debug
+
             if (!API_KEY) {
-                return message.reply("❌ حط GEMINI_API_KEY في .env");
+                return message.reply("❌ مفيش API KEY في .env");
             }
 
-            // ✅ اللينك الجديد الصح 100%
             const url = `https://generativeai.googleapis.com/v1/models/gemini-1.5-flash:generateContent?key=${API_KEY}`;
 
             const res = await fetch(url, {
@@ -100,7 +101,6 @@ client.on('messageCreate', async (message) => {
 
             let reply = data.candidates[0].content.parts[0].text;
 
-            // limit 2000
             if (reply.length > 2000) {
                 reply = reply.slice(0, 2000);
             }
@@ -108,8 +108,11 @@ client.on('messageCreate', async (message) => {
             message.reply(reply);
 
         } catch (err) {
-            console.error(err);
-            message.reply("❌ حصل error كبير");
+            console.error("❌ ERROR:", err);
+
+            message.reply(
+                "❌ Error:\n```" + err.message + "```"
+            );
         }
     }
 });

@@ -52,7 +52,7 @@ client.on('messageCreate', async (message) => {
         return await getLevel(message);
     }
 
-    // 🏆 Best 5 Players (🔥 نسخة مطورة)
+    // 🏆 Best 5 Players (👑 نسخة احترافية)
     if (message.content === "!best") {
         const db = getDB();
         if (!db) return;
@@ -90,21 +90,21 @@ client.on('messageCreate', async (message) => {
             console.log("❌ Failed to fetch top user");
         }
 
+        let title = "🏆 Best 5 Players";
+
+        if (topUser) {
+            title = `👑 ${topUser.username} | Top Player`;
+        }
+
         const embed = new EmbedBuilder()
-            .setColor("#FFD700") // 👑 ذهبي
-            .setTitle("🏆 Best 5 Players")
+            .setColor("#FFD700")
+            .setTitle(title)
             .setDescription(description)
             .setFooter({ text: "Devil Bot 😈" });
 
         if (topUser) {
             const avatar = topUser.displayAvatarURL({ dynamic: true, size: 1024 });
-
-            embed.setAuthor({
-                name: `👑 Top Player: ${topUser.username}`,
-                iconURL: avatar
-            });
-
-            embed.setImage(avatar); // 🖼️ صورة كبيرة
+            embed.setImage(avatar);
         }
 
         message.reply({ embeds: [embed] });

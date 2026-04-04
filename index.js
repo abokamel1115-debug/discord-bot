@@ -66,7 +66,7 @@ client.on('messageCreate', async (message) => {
             }
 
             // ✅ الموديل الصح 100%
-            const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash-latest:generateContent?key=${API_KEY}`;
+            const url = `https://generativelanguage.googleapis.com/v1beta/models/models/gemini-1.0-pro:generateContent?key=${API_KEY}`;
 
             const res = await fetch(url, {
                 method: "POST",

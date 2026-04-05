@@ -1,4 +1,250 @@
-require("dotenv").config();
+requirerequire("dotenv").config();
+
+const { Client, GatewayIntentBits, EmbedBuilder } = require('discord.js');
+const { startMessages } = require('./messages');
+const { handleXP, getLevel } = require('./levels');
+const { getDB, connectDB } = require('./database');
+
+// 🔥 ticket system
+const { handleTicketInteraction, sendPanel } = require("./ticket");
+
+const express = require('express');
+
+const app = express();
+const PORT = process.env.PORT || 3000;
+
+app.get('/', (req, res) => res.send('Bot is running'));
+
+app.listen(PORT, '0.0.0.0', () => {
+    console.log(`🌐 Server running on port ${PORT}`);
+});
+
+// 🔥 DB
+connectDB();
+
+const client = new Client({
+    intents: [
+        GatewayIntentBits.Guilds,
+        GatewayIntentBits.GuildMessages,
+        GatewayIntentBits.MessageContent
+    ]
+});
+
+const TOKEN = process.env.TOKEN;
+const OWNER_ID = "1215378499393552526";
+
+client.once('ready', async () => {
+    console.log(`🔥 Logged in as ${client.user.tag}`);
+    startMessages(client);
+
+    handleTicketInteraction(client, OWNER_ID);
+    await sendPanel(client);
+});
+
+client.on('messageCreate', async (message) => {
+    try {
+        if (message.author.bot) return;
+
+        const db = getDB();
+        if (!db) return;
+
+        const users = db.collection("users");
+
+        await handleXP(message);
+
+        const args = message.content.split(" ");
+        const command = args[0];
+        const mentionedUser = message.mentions.users.first();
+
+        // ================== 👤 USER ==================
+
+        if (command === "!ping") {
+            return message.reply("🏓 Pong!");
+        }
+
+        if (command === "!level") {
+            return await getLevel(message);
+        }
+
+        if (command === "!best") {
+
+            const topUsers = await users.find().sort({ level: -1, xp: -1 }).limit(5).toArray();
+
+            if (!topUsers.length) {
+                return message.reply("❌ مفيش بيانات");
+            }
+
+            let desc = "";
+
+            for (let i = 0; i < topUsers.length; i++) {
+                const medal = ["🥇", "🥈", "🥉"][i] || "🔹";
+                const u = topUsers[i];
+                desc += `${medal} #${i + 1} - <@${u.userId}> (Level ${u.level})\n`;
+            }
+
+            return message.reply({
+                embeds: [
+                    new EmbedBuilder()
+                        .setColor("#FFD700")
+                        .setTitle("🏆 Best 5 Players")
+                        .setDescription(desc)
+                ]
+            });
+        }
+
+        // ================== 💀 OWNER ONLY ==================
+
+        const ownerOnly = [
+            "!addxp",
+            "!rexp",
+            "!addlevel",
+            "!relevel",
+            "!alllevels",
+            "!clear",
+            "!مستوي"
+        ];
+
+        if (ownerOnly.includes(command) && message.author.id !== OWNER_ID) {
+            return message.reply("❌ الأمر للأونر فقط 👑");
+        }
+
+        // ================== 👑 OWNER ==================
+
+        if (command === "!addxp") {
+            if (!mentionedUser) return message.reply("❌ منشن الشخص");
+
+            const amount = parseInt(args[2]);
+            if (isNaN(amount)) return;
+
+            await users.updateOne(
+                { userId: mentionedUser.id },
+                { $inc: { xp: amount }, $setOnInsert: { level: 1 } },
+                { upsert: true }
+            );
+
+            return message.reply(`🔥 +${amount} XP`);
+        }
+
+        if (command === "!rexp") {
+            if (!mentionedUser) return message.reply("❌ منشن الشخص");
+
+            const amount = parseInt(args[2]);
+            if (isNaN(amount)) return;
+
+            await users.updateOne(
+                { userId: mentionedUser.id },
+                { $inc: { xp: -amount } }
+            );
+
+            return message.reply(`💀 -${amount} XP`);
+        }
+
+        if (command === "!addlevel") {
+            if (!mentionedUser) return message.reply("❌ منشن الشخص");
+
+            const amount = parseInt(args[2]);
+            if (isNaN(amount)) return;
+
+            await users.updateOne(
+                { userId: mentionedUser.id },
+                { $inc: { level: amount } },
+                { upsert: true }
+            );
+
+            return message.reply(`👑 +${amount} Level`);
+        }
+
+        if (command === "!relevel") {
+            if (!mentionedUser) return message.reply("❌ منشن الشخص");
+
+            const amount = parseInt(args[2]);
+            if (isNaN(amount)) return;
+
+            await users.updateOne(
+                { userId: mentionedUser.id },
+                { $inc: { level: -amount } }
+            );
+
+            return message.reply(`💀 -${amount} Level`);
+        }
+
+        if (command === "!alllevels") {
+
+            const all = await users.find().sort({ level: -1, xp: -1 }).limit(20).toArray();
+
+            let desc = "";
+            for (let i = 0; i < all.length; i++) {
+                desc += `#${i + 1} <@${all[i].userId}> - Lvl ${all[i].level} | XP ${all[i].xp}\n`;
+            }
+
+            return message.reply({
+                embeds: [
+                    new EmbedBuilder()
+                        .setTitle("📊 All Users")
+                        .setDescription(desc)
+                ]
+            });
+        }
+
+        if (command === "!clear") {
+            const amount = parseInt(args[1]);
+            if (isNaN(amount)) return;
+
+            await message.channel.bulkDelete(amount, true);
+            return message.channel.send(`💀 Deleted ${amount}`);
+        }
+
+        // ================== 👑 مستوي ==================
+        if (command === "!مستوي") {
+
+            if (!mentionedUser) return message.reply("❌ منشن الشخص");
+
+            const userId = mentionedUser.id;
+
+            await users.updateOne(
+                { userId },
+                { $setOnInsert: { userId, xp: 0, level: 1 } },
+                { upsert: true }
+            );
+
+            const user = await users.findOne({ userId });
+
+            const level = user.level;
+            const xp = user.xp;
+            const neededXP = level * 100;
+
+            const percentage = xp / neededXP;
+            const bars = Math.round(percentage * 10);
+            const xpBar = "█".repeat(bars) + "░".repeat(10 - bars);
+
+            const rank = await users.countDocuments({
+                $or: [
+                    { level: { $gt: level } },
+                    { level: level, xp: { $gt: xp } }
+                ]
+            }) + 1;
+
+            const embed = new EmbedBuilder()
+                .setColor("#2b2d31")
+                .setAuthor({
+                    name: `📊 مستوى ${mentionedUser.username}`,
+                    iconURL: mentionedUser.displayAvatarURL()
+                })
+                .addFields(
+                    { name: "⭐ المستوى", value: `\`${level}\``, inline: true },
+                    { name: "👑 الرتبة", value: `\`#${rank}\``, inline: true },
+                    { name: "✨ النقاط", value: `\`${xp} / ${neededXP}\`\n${xpBar}` }
+                );
+
+            return message.reply({ embeds: [embed] });
+        }
+
+    } catch (err) {
+        console.error(err);
+    }
+});
+
+client.login(TOKEN);("dotenv").config();
 
 const { Client, GatewayIntentBits, EmbedBuilder } = require('discord.js');
 const { startMessages } = require('./messages');

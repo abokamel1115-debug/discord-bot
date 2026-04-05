@@ -184,10 +184,10 @@ client.on('messageCreate', async (message) => {
             return message.channel.send(`💀 Deleted ${amount}`).then(m => setTimeout(() => m.delete(), 3000));
         }
 
-        // ================== 👑 RANK ==================
+        // ================== 👑 مستوي ==================
         if (command === "!مستوي") {
 
-            if (!mentionedUser) return message.reply("❌ Mention a user");
+            if (!mentionedUser) return message.reply("❌ منشن الشخص");
 
             const userId = mentionedUser.id;
 
@@ -217,14 +217,14 @@ client.on('messageCreate', async (message) => {
             const embed = new EmbedBuilder()
                 .setColor("#2b2d31")
                 .setAuthor({
-                    name: `📊 ${mentionedUser.username} Stats`,
+                    name: `📊 مستوى ${mentionedUser.username}`,
                     iconURL: mentionedUser.displayAvatarURL()
                 })
                 .setThumbnail(mentionedUser.displayAvatarURL({ dynamic: true }))
                 .addFields(
-                    { name: "⭐ Level", value: `\`${level}\``, inline: true },
-                    { name: "👑 Rank", value: `\`#${rank}\``, inline: true },
-                    { name: "✨ XP", value: `\`${xp} / ${neededXP}\`\n${xpBar}` }
+                    { name: "⭐ المستوى", value: `\`${level}\``, inline: true },
+                    { name: "👑 الرتبة", value: `\`#${rank}\``, inline: true },
+                    { name: "✨ النقاط", value: `\`${xp} / ${neededXP}\`\n${xpBar}` }
                 )
                 .setFooter({ text: "Devil Bot 😈" });
 

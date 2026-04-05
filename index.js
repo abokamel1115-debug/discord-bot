@@ -40,7 +40,7 @@ client.once('ready', async () => {
     // 🔥 تشغيل التيكت
     handleTicketInteraction(client, OWNER_ID);
 
-    // 🔥 إرسال البانل تلقائي
+    // 🔥 إرسال البانل مرة واحدة فقط
     await sendPanel(client);
 });
 

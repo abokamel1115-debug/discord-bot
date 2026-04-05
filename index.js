@@ -20,7 +20,7 @@ app.listen(PORT, '0.0.0.0', () => {
 });
 
 // 🔥 DB
-connectDB();
+connectDB().catch(console.error);
 
 const client = new Client({
     intents: [
@@ -35,26 +35,32 @@ const OWNER_ID = "1215378499393552526";
 
 client.once('ready', async () => {
     console.log(`🔥 Logged in as ${client.user.tag}`);
-    startMessages(client);
 
-    handleTicketInteraction(client, OWNER_ID);
-    await sendPanel(client);
+    try {
+        startMessages(client);
+        handleTicketInteraction(client, OWNER_ID);
+        await sendPanel(client);
+    } catch (err) {
+        console.error("❌ Ready Error:", err);
+    }
 });
 
 client.on('messageCreate', async (message) => {
     try {
-        if (message.author.bot) return;
+        if (!message || message.author.bot) return;
 
         const db = getDB();
         if (!db) return;
 
         const users = db.collection("users");
 
-        await handleXP(message);
+        await handleXP(message).catch(() => {});
 
-        const args = message.content.split(" ");
-        const command = args[0];
+        const args = message.content.trim().split(/ +/);
+        const command = args[0]?.toLowerCase();
         const mentionedUser = message.mentions.users.first();
+
+        if (!command) return;
 
         // ================== 👤 USER ==================
 
@@ -114,7 +120,7 @@ client.on('messageCreate', async (message) => {
             if (!mentionedUser) return message.reply("❌ منشن الشخص");
 
             const amount = parseInt(args[2]);
-            if (isNaN(amount)) return;
+            if (isNaN(amount)) return message.reply("❌ رقم غير صالح");
 
             await users.updateOne(
                 { userId: mentionedUser.id },
@@ -129,7 +135,7 @@ client.on('messageCreate', async (message) => {
             if (!mentionedUser) return message.reply("❌ منشن الشخص");
 
             const amount = parseInt(args[2]);
-            if (isNaN(amount)) return;
+            if (isNaN(amount)) return message.reply("❌ رقم غير صالح");
 
             await users.updateOne(
                 { userId: mentionedUser.id },
@@ -143,7 +149,7 @@ client.on('messageCreate', async (message) => {
             if (!mentionedUser) return message.reply("❌ منشن الشخص");
 
             const amount = parseInt(args[2]);
-            if (isNaN(amount)) return;
+            if (isNaN(amount)) return message.reply("❌ رقم غير صالح");
 
             await users.updateOne(
                 { userId: mentionedUser.id },
@@ -158,7 +164,7 @@ client.on('messageCreate', async (message) => {
             if (!mentionedUser) return message.reply("❌ منشن الشخص");
 
             const amount = parseInt(args[2]);
-            if (isNaN(amount)) return;
+            if (isNaN(amount)) return message.reply("❌ رقم غير صالح");
 
             await users.updateOne(
                 { userId: mentionedUser.id },
@@ -190,7 +196,7 @@ client.on('messageCreate', async (message) => {
             const amount = parseInt(args[1]);
             if (isNaN(amount)) return;
 
-            await message.channel.bulkDelete(amount, true);
+            await message.channel.bulkDelete(amount, true).catch(() => {});
             return message.channel.send(`💀 Deleted ${amount}`);
         }
 
@@ -240,7 +246,7 @@ client.on('messageCreate', async (message) => {
         }
 
     } catch (err) {
-        console.error(err);
+        console.error("❌ Message Error:", err);
     }
 });
 

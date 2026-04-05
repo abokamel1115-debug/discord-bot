@@ -24,10 +24,22 @@ async function getNextTicketNumber(db) {
     return data.value.value;
 }
 
-// 🎫 إرسال البانل
+// 🎫 إرسال Panel مرة واحدة فقط
 async function sendPanel(client) {
+    const db = getDB();
+    const settings = db.collection("settings");
+
     const channel = await client.channels.fetch("1490473080915628192").catch(() => null);
     if (!channel) return;
+
+    const data = await settings.findOne({ name: "ticketPanel" });
+
+    if (data) {
+        try {
+            const msg = await channel.messages.fetch(data.messageId);
+            if (msg) return;
+        } catch {}
+    }
 
     const row = new ActionRowBuilder().addComponents(
         new ButtonBuilder()
@@ -40,10 +52,16 @@ async function sendPanel(client) {
         .setTitle("الدعم 🎫")
         .setDescription("لإنشاء تيكت اضغط هنا للتحدث مع الدعم 📩");
 
-    await channel.send({
+    const sent = await channel.send({
         embeds: [embed],
         components: [row]
     });
+
+    await settings.updateOne(
+        { name: "ticketPanel" },
+        { $set: { messageId: sent.id } },
+        { upsert: true }
+    );
 }
 
 // 🎮 التعامل مع الأزرار
@@ -56,6 +74,8 @@ function handleTicketInteraction(client, OWNER_ID) {
 
         // ================= CREATE =================
         if (interaction.customId === "create_ticket") {
+
+            await interaction.deferReply({ ephemeral: true });
 
             const today = new Date().toDateString();
 
@@ -71,9 +91,8 @@ function handleTicketInteraction(client, OWNER_ID) {
             }
 
             if (userData.count >= 2) {
-                return interaction.reply({
-                    content: "❌ الحد الأقصى 2 تيكت في اليوم",
-                    ephemeral: true
+                return interaction.editReply({
+                    content: "❌ الحد الأقصى 2 تيكت في اليوم"
                 });
             }
 
@@ -127,9 +146,8 @@ function handleTicketInteraction(client, OWNER_ID) {
 🔗 https://discord.com/channels/${guild.id}/${channel.id}`);
             } catch {}
 
-            return interaction.reply({
-                content: `✅ تم إنشاء التذكرة: ${channel}`,
-                ephemeral: true
+            await interaction.editReply({
+                content: `✅ تم إنشاء التذكرة: ${channel}`
             });
         }
 

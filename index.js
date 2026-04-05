@@ -173,7 +173,7 @@ client.on('messageCreate', async (message) => {
         }
 
         // ================== 👑 RANK (ENGLISH DESIGN) ==================
-        if (command === "!مستوي") {
+        if (command === "!rank") {
 
             if (!mentionedUser) return message.reply("❌ Mention a user");
 

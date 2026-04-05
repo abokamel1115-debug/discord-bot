@@ -1,6 +1,6 @@
 require("dotenv").config();
 
-const { Client, GatewayIntentBits, EmbedBuilder, PermissionsBitField } = require('discord.js');
+const { Client, GatewayIntentBits, EmbedBuilder } = require('discord.js');
 const { startMessages } = require('./messages');
 const { handleXP, getLevel } = require('./levels');
 const { getDB, connectDB } = require('./database');
@@ -30,11 +30,6 @@ const client = new Client({
 const TOKEN = process.env.TOKEN;
 const OWNER_ID = "1215378499393552526";
 
-// 👑 Owner Check
-function isOwner(message) {
-    return message.author.id === OWNER_ID;
-}
-
 client.once('ready', () => {
     console.log(`🔥 Logged in as ${client.user.tag}`);
     startMessages(client);
@@ -49,47 +44,28 @@ client.on('messageCreate', async (message) => {
 
         const users = db.collection("users");
 
-        // 🔥 XP System
         await handleXP(message);
 
         const args = message.content.split(" ");
         const command = args[0];
         const mentionedUser = message.mentions.users.first();
 
-        // 🟢 ping
-        if (command === "!ping") {
-            return message.reply("🏓 Pong!");
-        }
+        // ================== 👤 USER ==================
 
-        // 🟢 level
         if (command === "!level") {
             return await getLevel(message);
         }
 
-        // ================== 🏆 TOP ==================
-        if (command === "!best") {
+        if (command === "!best) {
 
-            const topUsers = await users
-                .find()
-                .sort({ level: -1, xp: -1 })
-                .limit(5)
-                .toArray();
+            const topUsers = await users.find().sort({ level: -1, xp: -1 }).limit(5).toArray();
 
-            if (!topUsers.length) {
-                return message.reply("❌ مفيش بيانات لسه");
-            }
-
-            let description = "";
+            let desc = "";
 
             for (let i = 0; i < topUsers.length; i++) {
+                const medal = ["🥇", "🥈", "🥉"][i] || "🔹";
                 const u = topUsers[i];
-
-                let medal = "🔹";
-                if (i === 0) medal = "🥇";
-                else if (i === 1) medal = "🥈";
-                else if (i === 2) medal = "🥉";
-
-                description += `${medal} **#${i + 1}** - <@${u.userId}> (Level ${u.level})\n`;
+                desc += `${medal} #${i + 1} - <@${u.userId}> (Level ${u.level})\n`;
             }
 
             let topUser = null;
@@ -98,15 +74,12 @@ client.on('messageCreate', async (message) => {
             } catch {}
 
             let title = "🏆 Best 5 Players";
-
-            if (topUser) {
-                title = `👑 ${topUser.username.toUpperCase()} | TOP PLAYER`;
-            }
+            if (topUser) title = `👑 ${topUser.username.toUpperCase()} | TOP PLAYER`;
 
             const embed = new EmbedBuilder()
                 .setColor("#FFD700")
                 .setTitle(title)
-                .setDescription(description)
+                .setDescription(desc)
                 .setFooter({ text: "🔥 DEVIL SYSTEM" })
                 .setTimestamp();
 
@@ -118,58 +91,18 @@ client.on('messageCreate', async (message) => {
             return message.reply({ embeds: [embed] });
         }
 
-        // ================== 📊 ALL LEVELS ==================
-        if (command === "!alllevels") {
-
-            if (!isOwner(message)) {
-                return message.reply("❌ الأمر ده ليك أنت بس");
-            }
-
-            const allUsers = await users
-                .find()
-                .sort({ level: -1, xp: -1 })
-                .toArray();
-
-            if (!allUsers.length) {
-                return message.reply("❌ مفيش بيانات");
-            }
-
-            let description = "";
-
-            for (let i = 0; i < allUsers.length; i++) {
-                const u = allUsers[i];
-
-                description += `**#${i + 1}** - <@${u.userId}> | Level: ${u.level} | XP: ${u.xp}\n`;
-
-                if (i >= 20) {
-                    description += "\n... والباقي كتير 😅";
-                    break;
-                }
-            }
-
-            const embed = new EmbedBuilder()
-                .setColor("#00ff99")
-                .setTitle("📊 كل اللاعبين")
-                .setDescription(description)
-                .setFooter({ text: "Devil Bot 😈" })
-                .setTimestamp();
-
-            return message.reply({ embeds: [embed] });
+        // ================== 💀 OWNER CHECK ==================
+        if (message.author.id !== OWNER_ID) {
+            return message.reply("❌ الأمر مرفوض… الأونر فقط 👑💀");
         }
 
-        // ================== 💀 OWNER ONLY ==================
-        const ownerOnly = ["!addxp", "!rexp", "!addlevel", "!relevel", "!rank"];
+        // ================== 👑 OWNER ==================
 
-        if (ownerOnly.includes(command) && !isOwner(message)) {
-            return message.reply("⚠️ هذا الأمر محظور… خاص بي owner فقط 👑💀");
-        }
+        if (command === "!ping") return message.reply("🏓 Pong!");
 
-        // 🔥 addxp
         if (command === "!addxp") {
-            if (!mentionedUser) return message.reply("❌ منشن الشخص");
-
             const amount = parseInt(args[2]);
-            if (isNaN(amount)) return;
+            if (!mentionedUser || isNaN(amount)) return;
 
             await users.updateOne(
                 { userId: mentionedUser.id },
@@ -177,59 +110,72 @@ client.on('messageCreate', async (message) => {
                 { upsert: true }
             );
 
-            return message.reply(`🔥 +${amount} XP → ${mentionedUser}`);
+            return message.reply(`🔥 +${amount} XP`);
         }
 
-        // 💀 rexp
         if (command === "!rexp") {
-            if (!mentionedUser) return message.reply("❌ منشن الشخص");
-
             const amount = parseInt(args[2]);
-            if (isNaN(amount)) return;
+            if (!mentionedUser || isNaN(amount)) return;
 
             await users.updateOne(
                 { userId: mentionedUser.id },
                 { $inc: { xp: -amount } }
             );
 
-            return message.reply(`💀 -${amount} XP ← ${mentionedUser}`);
+            return message.reply(`💀 -${amount} XP`);
         }
 
-        // 👑 addlevel
         if (command === "!addlevel") {
-            if (!mentionedUser) return message.reply("❌ منشن الشخص");
-
             const amount = parseInt(args[2]);
-            if (isNaN(amount)) return;
+            if (!mentionedUser || isNaN(amount)) return;
 
             await users.updateOne(
                 { userId: mentionedUser.id },
-                { $inc: { level: amount }, $setOnInsert: { xp: 0 } },
+                { $inc: { level: amount } },
                 { upsert: true }
             );
 
-            return message.reply(`👑 +${amount} Level → ${mentionedUser}`);
+            return message.reply(`👑 +${amount} Level`);
         }
 
-        // 💀 relevel
         if (command === "!relevel") {
-            if (!mentionedUser) return message.reply("❌ منشن الشخص");
-
             const amount = parseInt(args[2]);
-            if (isNaN(amount)) return;
+            if (!mentionedUser || isNaN(amount)) return;
 
             await users.updateOne(
                 { userId: mentionedUser.id },
                 { $inc: { level: -amount } }
             );
 
-            return message.reply(`💀 -${amount} Level ← ${mentionedUser}`);
+            return message.reply(`💀 -${amount} Level`);
         }
 
-        // ================== 🔒 RANK ==================
-        if (command === "!rank") {
+        if (command === "!alllevels") {
 
-            if (!mentionedUser) return message.reply("❌ منشن الشخص");
+            const all = await users.find().sort({ level: -1, xp: -1 }).limit(20).toArray();
+
+            let desc = "";
+            for (let i = 0; i < all.length; i++) {
+                desc += `#${i + 1} <@${all[i].userId}> - Lvl ${all[i].level} | XP ${all[i].xp}\n`;
+            }
+
+            return message.reply({
+                embeds: [new EmbedBuilder().setTitle("📊 All Users").setDescription(desc)]
+            });
+        }
+
+        if (command === "!clear") {
+            const amount = parseInt(args[1]);
+            if (isNaN(amount)) return;
+
+            await message.channel.bulkDelete(amount, true);
+            return message.channel.send(`💀 Deleted ${amount}`).then(m => setTimeout(() => m.delete(), 3000));
+        }
+
+        // ================== 👑 RANK (ENGLISH DESIGN) ==================
+        if (command === "!مستوي") {
+
+            if (!mentionedUser) return message.reply("❌ Mention a user");
 
             const userId = mentionedUser.id;
 
@@ -246,10 +192,8 @@ client.on('messageCreate', async (message) => {
             const neededXP = level * 100;
 
             const percentage = xp / neededXP;
-            const totalBars = 10;
-            const filledBars = Math.round(percentage * totalBars);
-            const emptyBars = totalBars - filledBars;
-            const xpBar = "█".repeat(filledBars) + "░".repeat(emptyBars);
+            const bars = Math.round(percentage * 10);
+            const xpBar = "█".repeat(bars) + "░".repeat(10 - bars);
 
             const rank = await users.countDocuments({
                 $or: [
@@ -258,26 +202,17 @@ client.on('messageCreate', async (message) => {
                 ]
             }) + 1;
 
-            let member;
-            try {
-                member = await message.guild.members.fetch(userId);
-            } catch {
-                member = null;
-            }
-
-            const name = member?.displayName || mentionedUser.username;
-
             const embed = new EmbedBuilder()
                 .setColor("#2b2d31")
                 .setAuthor({
-                    name: `📊 إحصائيات ${name}`,
+                    name: `📊 ${mentionedUser.username} Stats`,
                     iconURL: mentionedUser.displayAvatarURL()
                 })
                 .setThumbnail(mentionedUser.displayAvatarURL({ dynamic: true }))
                 .addFields(
-                    { name: "⭐ المستوى", value: `\`${level}\``, inline: true },
-                    { name: "👑 الرتبة", value: `\`#${rank}\``, inline: true },
-                    { name: "✨ النقاط", value: `\`${xp} / ${neededXP}\`\n${xpBar}` }
+                    { name: "⭐ Level", value: `\`${level}\``, inline: true },
+                    { name: "👑 Rank", value: `\`#${rank}\``, inline: true },
+                    { name: "✨ XP", value: `\`${xp} / ${neededXP}\`\n${xpBar}` }
                 )
                 .setFooter({ text: "Devil Bot 😈" });
 
@@ -285,7 +220,7 @@ client.on('messageCreate', async (message) => {
         }
 
     } catch (err) {
-        console.error("❌ ERROR:", err);
+        console.error(err);
     }
 });
 

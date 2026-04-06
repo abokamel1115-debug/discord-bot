@@ -65,7 +65,7 @@ client.on('messageCreate', async (message) => {
         // ================== 👤 USER ==================
 
         if (command === "!ping") {
-            return message.reply("🏓 Pong!");
+            return message.reply("🏓 Pong! New");
         }
 
         if (command === "!level") {

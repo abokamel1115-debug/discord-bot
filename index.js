@@ -72,6 +72,7 @@ client.on('messageCreate', async (message) => {
             return await getLevel(message);
         }
 
+        // 🔥🔥🔥 BEST (تم التعديل هنا فقط)
         if (command === "!best") {
 
             const topUsers = await users.find().sort({ level: -1, xp: -1 }).limit(5).toArray();
@@ -88,14 +89,35 @@ client.on('messageCreate', async (message) => {
                 desc += `${medal} #${i + 1} - <@${u.userId}> (Level ${u.level})\n`;
             }
 
-            return message.reply({
-                embeds: [
-                    new EmbedBuilder()
-                        .setColor("#FFD700")
-                        .setTitle("🏆 Best 5 Players")
-                        .setDescription(desc)
-                ]
-            });
+            // 👑 Top 1
+            let topUser = null;
+            let avatar = null;
+            let title = "🏆 Best 5 Players";
+
+            try {
+                topUser = await client.users.fetch(topUsers[0].userId);
+                avatar = topUser.displayAvatarURL({ dynamic: true, size: 1024 });
+
+                // 🔥 الاسم الكبير فوق
+                title = `👑 ${topUser.username} | Top Player`;
+
+            } catch (err) {
+                console.log("❌ Error fetching top user");
+            }
+
+            const embed = new EmbedBuilder()
+                .setColor("#FFD700")
+                .setTitle(title)
+                .setDescription(desc)
+                .setFooter({ text: "Devil Bot 😈" });
+
+            // 🖼️ صورة جنب
+            if (avatar) embed.setThumbnail(avatar);
+
+            // 🖼️ صورة كبيرة تحت
+            if (avatar) embed.setImage(avatar);
+
+            return message.reply({ embeds: [embed] });
         }
 
         // ================== 💀 OWNER ONLY ==================
